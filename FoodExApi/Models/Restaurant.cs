@@ -17,6 +17,8 @@ namespace FoodExApi.Models
         public string RestaurantName { get; set; }
         public string RestaurantLocation { get; set; }
         public string WaitingTime { get; set; }
+        public string RestaurantDescription { get; set; }
+        public string ImageLink { get; set; }
 
         public virtual ICollection<AppOrder> AppOrder { get; set; }
         public virtual ICollection<DiscountsDetails> DiscountsDetails { get; set; }

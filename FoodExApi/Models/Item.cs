@@ -13,7 +13,7 @@ namespace FoodExApi.Models
         public int ItemId { get; set; }
         public int? RestaurantId { get; set; }
         public string Name { get; set; }
-        public string Category { get; set; }
+        public int? Category { get; set; }
         public decimal? Price { get; set; }
 
         public virtual Restaurant Restaurant { get; set; }

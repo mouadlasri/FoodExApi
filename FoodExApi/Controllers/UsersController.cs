@@ -26,8 +26,8 @@ namespace FoodExApi.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()
         {
-           
 
+            return Content("Hello");
             return new string[] { "value1", "value2" };
         }
 

@@ -20,6 +20,7 @@ namespace FoodExApi.Models
         public virtual DbSet<AppUser> AppUser { get; set; }
         public virtual DbSet<DiscountsDetails> DiscountsDetails { get; set; }
         public virtual DbSet<Item> Item { get; set; }
+        public virtual DbSet<ItemCategory> ItemCategory { get; set; }
         public virtual DbSet<MakeOrder> MakeOrder { get; set; }
         public virtual DbSet<OrderDetails> OrderDetails { get; set; }
         public virtual DbSet<Ratings> Ratings { get; set; }
@@ -186,10 +187,7 @@ namespace FoodExApi.Models
 
                 entity.Property(e => e.ItemId).HasColumnName("item_id");
 
-                entity.Property(e => e.Category)
-                    .HasColumnName("category")
-                    .HasMaxLength(20)
-                    .IsUnicode(false);
+                entity.Property(e => e.Category).HasColumnName("category");
 
                 entity.Property(e => e.Name)
                     .HasColumnName("name")
@@ -207,6 +205,23 @@ namespace FoodExApi.Models
                     .HasForeignKey(d => d.RestaurantId)
                     .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("fk_item_restaurant_id");
+            });
+
+            modelBuilder.Entity<ItemCategory>(entity =>
+            {
+                entity.HasKey(e => e.CategoryId)
+                    .HasName("pk_category_id");
+
+                entity.ToTable("item_category");
+
+                entity.Property(e => e.CategoryId)
+                    .HasColumnName("category_id")
+                    .ValueGeneratedNever();
+
+                entity.Property(e => e.CategoryName)
+                    .HasColumnName("category_name")
+                    .HasMaxLength(30)
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<MakeOrder>(entity =>
@@ -296,6 +311,15 @@ namespace FoodExApi.Models
                 entity.Property(e => e.RestaurantId)
                     .HasColumnName("restaurant_id")
                     .ValueGeneratedNever();
+
+                entity.Property(e => e.ImageLink)
+                    .HasColumnName("image_link")
+                    .IsUnicode(false);
+
+                entity.Property(e => e.RestaurantDescription)
+                    .HasColumnName("restaurant_description")
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.RestaurantLocation)
                     .HasColumnName("restaurant_location")
