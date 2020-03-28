@@ -61,41 +61,41 @@ namespace FoodExApi.Controllers
         {
             var db = this.db;
 
-            var restaurantItems = (from itemCategory in db.ItemCategory
-                                   join item in db.Item on itemCategory.CategoryId equals item.Category
-                                   join restaurant in db.Restaurant on item.RestaurantId equals restaurant.RestaurantId
-                                   where restaurant.RestaurantId == id
-                                   select new {
-                                       CategoryId = itemCategory.CategoryId,
-                                       CategoryName = itemCategory.CategoryName
-                                   }).Distinct().ToList();
+            //var restaurantItems = (from itemCategory in db.ItemCategory
+            //                       join item in db.Item on itemCategory.CategoryId equals item.Category
+            //                       join restaurant in db.Restaurant on item.RestaurantId equals restaurant.RestaurantId
+            //                       where restaurant.RestaurantId == id
+            //                       select new {
+            //                           CategoryId = itemCategory.CategoryId,
+            //                           CategoryName = itemCategory.CategoryName
+            //                       }).Distinct().ToList();
 
-            var test = (from item in db.Item
+            var restaurantItems = (from item in db.Item
                         join itemCategory in db.ItemCategory
                         on item.Category equals itemCategory.CategoryId
                         where item.RestaurantId == id
                         select new
                         {
                             CategoryName = itemCategory.CategoryName,
-                            Itemid = item.ItemId,
+                            ItemId = item.ItemId,
                             RestaurantId = item.RestaurantId,
                             ItemName = item.Name,
-                            Itemprice = item.Price
+                            ItemPrice = item.Price
                         });
 
-            return Ok(test);
+            return Ok(restaurantItems);
 
 
-            Console.WriteLine("Restaurnat Items => ", restaurantItems);
+            //Console.WriteLine("Restaurnat Items => ", restaurantItems);
 
-            if (restaurantItems != null)
-            {
-                return Ok(restaurantItems);
-            }
-            else
-            {
-                return BadRequest();
-            }
+            //if (restaurantItems != null)
+            //{
+            //    return Ok(restaurantItems);
+            //}
+            //else
+            //{
+            //    return BadRequest();
+            //}
         }
 
         // GET: api/Restaurants/{id}/ItemCategories

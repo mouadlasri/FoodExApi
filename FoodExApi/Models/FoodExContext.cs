@@ -189,6 +189,14 @@ namespace FoodExApi.Models
 
                 entity.Property(e => e.Category).HasColumnName("category");
 
+                entity.Property(e => e.ItemDescription)
+                    .HasColumnName("item_description")
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ItemImage)
+                    .HasColumnName("item_image")
+                    .IsUnicode(false);
+
                 entity.Property(e => e.Name)
                     .HasColumnName("name")
                     .HasMaxLength(50)
