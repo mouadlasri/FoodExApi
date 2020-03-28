@@ -17,6 +17,7 @@ namespace FoodExApi.Models
         public decimal? Price { get; set; }
         public string ItemImage { get; set; }
         public string ItemDescription { get; set; }
+        public int? WaitingTime { get; set; }
 
         public virtual Restaurant Restaurant { get; set; }
         public virtual ICollection<OrderDetails> OrderDetails { get; set; }

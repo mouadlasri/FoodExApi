@@ -61,15 +61,6 @@ namespace FoodExApi.Controllers
         {
             var db = this.db;
 
-            //var restaurantItems = (from itemCategory in db.ItemCategory
-            //                       join item in db.Item on itemCategory.CategoryId equals item.Category
-            //                       join restaurant in db.Restaurant on item.RestaurantId equals restaurant.RestaurantId
-            //                       where restaurant.RestaurantId == id
-            //                       select new {
-            //                           CategoryId = itemCategory.CategoryId,
-            //                           CategoryName = itemCategory.CategoryName
-            //                       }).Distinct().ToList();
-
             var restaurantItems = (from item in db.Item
                         join itemCategory in db.ItemCategory
                         on item.Category equals itemCategory.CategoryId
@@ -80,22 +71,22 @@ namespace FoodExApi.Controllers
                             ItemId = item.ItemId,
                             RestaurantId = item.RestaurantId,
                             ItemName = item.Name,
-                            ItemPrice = item.Price
+                            ItemPrice = item.Price,
+                            ItemImage = item.ItemImage,
+                            ItemDescription = item.ItemDescription,
+                            ItemWaitingTime = item.WaitingTime
                         });
 
-            return Ok(restaurantItems);
+            if (restaurantItems != null)
+            {
+                return Ok(restaurantItems);
+            }
+            else
+            {
+                return BadRequest();
+            }
 
-
-            //Console.WriteLine("Restaurnat Items => ", restaurantItems);
-
-            //if (restaurantItems != null)
-            //{
-            //    return Ok(restaurantItems);
-            //}
-            //else
-            //{
-            //    return BadRequest();
-            //}
+            
         }
 
         // GET: api/Restaurants/{id}/ItemCategories

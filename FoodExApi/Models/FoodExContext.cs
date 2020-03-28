@@ -208,6 +208,8 @@ namespace FoodExApi.Models
 
                 entity.Property(e => e.RestaurantId).HasColumnName("restaurant_id");
 
+                entity.Property(e => e.WaitingTime).HasColumnName("waiting_time");
+
                 entity.HasOne(d => d.Restaurant)
                     .WithMany(p => p.Item)
                     .HasForeignKey(d => d.RestaurantId)
