@@ -84,6 +84,12 @@ namespace FoodExApi.Models
 
                 entity.Property(e => e.RestaurantId).HasColumnName("restaurant_id");
 
+                entity.HasOne(d => d.Order)
+                    .WithOne(p => p.AppOrder)
+                    .HasForeignKey<AppOrder>(d => d.OrderId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_app_order_order_id");
+
                 entity.HasOne(d => d.Restaurant)
                     .WithMany(p => p.AppOrder)
                     .HasForeignKey(d => d.RestaurantId)
@@ -241,21 +247,13 @@ namespace FoodExApi.Models
 
                 entity.ToTable("make_order");
 
-                entity.Property(e => e.OrderId)
-                    .HasColumnName("order_id")
-                    .ValueGeneratedOnAdd();
+                entity.Property(e => e.OrderId).HasColumnName("order_id");
 
                 entity.Property(e => e.DateOrdered)
                     .HasColumnName("date_ordered")
                     .HasColumnType("datetime");
 
                 entity.Property(e => e.UserId).HasColumnName("user_id");
-
-                entity.HasOne(d => d.Order)
-                    .WithOne(p => p.MakeOrder)
-                    .HasForeignKey<MakeOrder>(d => d.OrderId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("fk_make_order_id");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.MakeOrder)
@@ -265,16 +263,15 @@ namespace FoodExApi.Models
 
             modelBuilder.Entity<OrderDetails>(entity =>
             {
-                entity.HasKey(e => e.OrderId)
-                    .HasName("pk_order_details_id");
-
                 entity.ToTable("order_details");
 
-                entity.Property(e => e.OrderId)
-                    .HasColumnName("order_id")
-                    .ValueGeneratedNever();
+                entity.Property(e => e.OrderDetailsId).HasColumnName("order_details_id");
 
                 entity.Property(e => e.ItemId).HasColumnName("item_id");
+
+                entity.Property(e => e.OrderId).HasColumnName("order_id");
+
+                entity.Property(e => e.Quantity).HasColumnName("quantity");
 
                 entity.HasOne(d => d.Item)
                     .WithMany(p => p.OrderDetails)
@@ -283,8 +280,8 @@ namespace FoodExApi.Models
                     .HasConstraintName("fk_order_details_item_id");
 
                 entity.HasOne(d => d.Order)
-                    .WithOne(p => p.OrderDetails)
-                    .HasForeignKey<OrderDetails>(d => d.OrderId)
+                    .WithMany(p => p.OrderDetails)
+                    .HasForeignKey(d => d.OrderId)
                     .HasConstraintName("fk_order_details_id");
             });
 

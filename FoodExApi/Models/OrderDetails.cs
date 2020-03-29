@@ -7,6 +7,8 @@ namespace FoodExApi.Models
     {
         public int OrderId { get; set; }
         public int? ItemId { get; set; }
+        public int? Quantity { get; set; }
+        public int OrderDetailsId { get; set; }
 
         public virtual Item Item { get; set; }
         public virtual AppOrder Order { get; set; }

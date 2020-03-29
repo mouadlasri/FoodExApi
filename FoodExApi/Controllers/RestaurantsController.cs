@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FoodExApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodExApi.Controllers
 {
@@ -119,12 +120,92 @@ namespace FoodExApi.Controllers
         }
 
 
+        // POST confirm the order of the user and add it to the database
+        [HttpPost("order")]
+        public IActionResult ConfirmOrder(ConfirmOrder order)
+        {   
+            // To return a status code of 400, all three DB Inserts need to be successfull
+            // Thus the try/catch statement after each change save
+            var db = this.db;
+
+            // First, create a new order with the user id in the MakeOrder table
+            MakeOrder newOrder = new MakeOrder
+            {
+                UserId = int.Parse(order.UserId)
+                // The OrderId is an Identity field, will be filled automatically
+                // The DateOrdered will be automatically filled with SQL trigger
+            };
+
+            db.Add<MakeOrder>(newOrder);
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine(ex);
+                return BadRequest();
+            }
+
+            // Second, populate the others tables: app_order (1)
+            int orderId = newOrder.OrderId;
+
+            AppOrder appOrder = new AppOrder
+            {
+                OrderId = orderId,
+                RestaurantId = int.Parse(order.RestaurantId),
+                OrderStatus = 1
+            };
+
+            db.Add<AppOrder>(appOrder);
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine(ex);
+                return BadRequest();
+            }
+            // Third, populate the others tables: order_details (1) with individual items
+
+            foreach (CartItem item in order.ItemsList)
+            {
+                // Create a new instance of MakeOrder object
+                OrderDetails orderDetails = new OrderDetails
+                {
+                    OrderId = orderId,
+                    ItemId = item.ItemId,
+                    Quantity = item.Quantity
+                };
+                db.Add<OrderDetails>(orderDetails);
+            }
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine(ex);
+                return BadRequest();
+            }
+
+            Console.WriteLine("Order Id just inserted => ", orderId);
+            
+            Console.WriteLine("Order => ", order);
+
+
+            return Ok(orderId);
+        }
 
         // POST: api/Restaurants
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
+        //[HttpPost]
+        //public void Post([FromBody] string value)
+        //{
+        //}
 
         // PUT: api/Restaurants/5
         [HttpPut("{id}")]

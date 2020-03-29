@@ -9,7 +9,7 @@ namespace FoodExApi.Models
         public int? UserId { get; set; }
         public DateTime? DateOrdered { get; set; }
 
-        public virtual AppOrder Order { get; set; }
         public virtual AppUser User { get; set; }
+        public virtual AppOrder AppOrder { get; set; }
     }
 }
