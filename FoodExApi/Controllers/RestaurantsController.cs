@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using FoodExApi.Models;
@@ -201,11 +202,8 @@ namespace FoodExApi.Controllers
             return Ok(orderId);
         }
 
-        // POST: api/Restaurants
-        //[HttpPost]
-        //public void Post([FromBody] string value)
-        //{
-        //}
+
+
 
         // PUT: api/Restaurants/5
         [HttpPut("{id}")]
