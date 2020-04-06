@@ -87,6 +87,7 @@ namespace FoodExApi.Controllers
         {
             var db = this.db;
 
+            // Get the Top 5 orders a user has made(all restaurants included)
             var topFiveOrders = (from orderDetails in db.OrderDetails
                                  join makeOrder in db.MakeOrder on orderDetails.OrderId equals makeOrder.OrderId
                                  join items in db.Item on orderDetails.ItemId equals items.ItemId
@@ -116,13 +117,14 @@ namespace FoodExApi.Controllers
             }
         }
 
-
+        // Get expenses over month of user
         [HttpGet("{id}/ExpensesOverMonths")]
         public ActionResult AnalyticsExpensesOverMonths(int id)
         {
             var db = this.db;
 
-            var expenses = (from makeOrders in db.MakeOrder
+            // Returns expenses grouped by months
+            var expensesUser = (from makeOrders in db.MakeOrder
                             group makeOrders by new { makeOrders.DateOrdered.Value.Month } into grouping
                             select new
                             {
@@ -130,17 +132,15 @@ namespace FoodExApi.Controllers
                                 CountOrders = grouping.Count()
                             });
 
-             //var groups = db.MakeOrder.AsEnumerable().GroupBy(item => item.DateOrdered.Value.Month);
-            return Ok(expenses);
-            //if (topFiveOrders != null)
-            //{
-            //    return Ok(topFiveOrders);
-            //}
+            if (expensesUser != null)
+            {
+                return Ok(expensesUser);
+            }
 
-            //else
-            //{
-            //    return BadRequest();
-            //}
+            else
+            {
+                return BadRequest();
+            }
         }
     }
 }

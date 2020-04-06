@@ -68,6 +68,32 @@ namespace FoodExApi.Controllers
             }
         }
 
+
+        // GET api/Users/{id}/OrdersPending
+        // Get pending orders of user
+        [HttpGet("{id}/OrdersPending")]
+        public ActionResult OrdersPending(int id)
+        {
+            var db = this.db;
+
+            int ordersPending = db.AppOrder.Where(appOrder => appOrder.OrderStatus == 1).Count(); // 1 = pending orders
+
+            return Ok(ordersPending);
+        }
+
+        // GET api/Users/{id}/OrdersCompleted
+        // Get completed orders of user
+        [HttpGet("{id}/OrdersCompleted")]
+        public ActionResult OrdersCompleted(int id)
+        {
+            var db = this.db;
+
+            int ordersCompleted = db.AppOrder.Where(appOrder => appOrder.OrderStatus == 2).Count(); // 2 = completed orders
+
+            return Ok(ordersCompleted);
+        }
+
+
         [HttpPost("/CreateAccount")]
         public IActionResult CreateAccount(Account newAccount)
         {
