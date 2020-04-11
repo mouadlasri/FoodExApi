@@ -24,7 +24,7 @@ namespace FoodExApi.Controllers
 
         // GET api/RestaurantAnalytics/{id}     id = RestaurantId
         // Get Count of all order categories of the last 24 hours
-        [HttpGet("{id}/daily")]
+        [HttpGet("{restaurantId}/daily")]
         public ActionResult GetDailyOrders(int restaurantId)
         {
             var db = this.db;
@@ -45,10 +45,10 @@ namespace FoodExApi.Controllers
                                Price = item.Price
                            }).ToList();
 
-            decimal dailyRevenues = 0;
+            decimal dailyRevenue = 0;
             foreach (var item in dailyRevenuesResults)
             {
-                dailyRevenues += item.Quantity.Value * item.Price.Value;
+                dailyRevenue += item.Quantity.Value * item.Price.Value;
             }
 
             // Getting the daily orders received
@@ -84,15 +84,79 @@ namespace FoodExApi.Controllers
                                      Price = item.Price
                                  }).ToList();
 
-            decimal totalRevenues = 0;
+            decimal totalRevenue = 0;
             foreach (var item in totalRevenuesResults)
             {
-                totalRevenues += item.Quantity.Value * item.Price.Value;
+                totalRevenue += item.Quantity.Value * item.Price.Value;
             }
 
             // Return anonymous type
-            return Ok(new { DailyRevenues = dailyRevenues, DailyOrdersReceived = dailyOrdersReceived, DailyUniqueUsers = dailyUniqueUsers, TotalRevenues = totalRevenues });
+            return Ok(new { DailyRevenue = dailyRevenue, DailyOrdersReceived = dailyOrdersReceived, DailyUniqueUsers = dailyUniqueUsers, TotalRevenue = totalRevenue });
             
+        }
+
+
+        [HttpGet("{restaurantId}/recentOrders")]
+        public ActionResult GetRecentOrders(int restaurantId)
+        {
+            var db = this.db;
+
+            var recentOrders = (from makeOrder in db.MakeOrder
+                                join appUser in db.AppUser on makeOrder.UserId equals appUser.UserId
+                                join appOrder in db.AppOrder on makeOrder.OrderId equals appOrder.OrderId
+                                where appOrder.RestaurantId == restaurantId
+                                orderby makeOrder.DateOrdered descending
+                                select new
+                                {
+                                    OrderId = makeOrder.OrderId,
+                                    FirstName = appUser.FirstName,
+                                    LastName = appUser.LastName,
+                                    UserId = appUser.UserId,
+                                    DateOrdered = makeOrder.DateOrdered.Value.ToString("MM-dd-yyyy HH:mm:ss"),
+                                    OrderStatus = appOrder.OrderStatus
+                                }).Take(6);
+
+            if(recentOrders != null)
+            {
+                return Ok(recentOrders);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpGet("{restaurantId}/topCategories")]
+        public ActionResult GetTopCategories(int restaurantId)
+        {
+            var db = this.db;
+            //SELECT TOP 5 order_details.item_id, SUM(order_details.quantity) AS 'Total Ordered' FROM order_details
+            //INNER JOIN item ON order_details.item_id = item.item_id
+            //WHERE item.restaurant_id = 1
+            //GROUP BY(order_details.item_id)
+            //ORDER BY 'Total Ordered' DESC;
+
+            var topItemsCategories = (from item in db.Item 
+                                      join orderDetails in db.OrderDetails on item.ItemId equals orderDetails.ItemId
+                                      where item.RestaurantId == restaurantId
+                                      group orderDetails by new {item.ItemId, item.Name}  into grp
+                                      orderby grp.Sum(item => item.Quantity)
+                                      select new
+                                      {
+                                          ItemId = grp.Key.ItemId,
+                                          ItemName = grp.Key.Name,
+                                          TotalOrdered = grp.Sum(item => item.Quantity)
+                                      }
+                                     ).Take(5);
+
+            if(topItemsCategories != null)
+            {
+                return Ok(topItemsCategories);
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
     }
 }
