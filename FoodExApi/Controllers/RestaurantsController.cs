@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using FoodExApi.Models;
@@ -87,11 +88,9 @@ namespace FoodExApi.Controllers
             {
                 return BadRequest();
             }
-
-            
         }
 
-        // GET: api/Restaurants/{id}/ItemCategories
+        // GET: api/Restaurants/filter/{id}/ItemCategories
         // Return all menu items of a specific category of a specific resetaurant
         [HttpGet("filter/{id}/{categoryId}")]
         public ActionResult RestaurantCategoryItems(int id, int categoryId)
@@ -120,7 +119,63 @@ namespace FoodExApi.Controllers
             
         }
 
+        // GET: api/Restaurants/{restaurantId}/{orderStatus}
+        // Get orders of specific status
+        [HttpGet("ListOrders/{restaurantId}/{orderStatus}")]
+        public IActionResult ListOrders(int restaurantId, int orderStatus)
+        {
+            var db = this.db;
+           
 
+            // Get the list of order items made by users with their respective order status and user information
+            var listOrders = (from appOrder in db.AppOrder
+                              join makeOrder in db.MakeOrder on appOrder.OrderId equals makeOrder.OrderId
+                              join appUser in db.AppUser on makeOrder.UserId equals appUser.UserId
+                              where appOrder.OrderStatus == orderStatus && appOrder.RestaurantId == restaurantId
+                              orderby makeOrder.DateOrdered descending
+                              let orderId = appOrder.OrderId
+                              select new
+                              {
+                                  OrderId = appOrder.OrderId,
+                                  RestaurantId = appOrder.RestaurantId,
+                                  CommentText = appOrder.CommentText,
+                                  Cancelled = appOrder.Cancelled,
+                                  OrderStatus = appOrder.OrderStatus,
+                                  UserId = appUser.UserId,
+                                  FirstName = appUser.FirstName,
+                                  LastName = appUser.LastName,
+                                  DateOrdered = makeOrder.DateOrdered,
+                                  DateCompleted = appOrder.DateCompleted,
+                                  // Get the list of items of this order
+                                  ItemsOrdered = (from orderDetails in db.OrderDetails
+                                          join item in db.Item on orderDetails.ItemId equals item.ItemId
+                                          join appOrder in db.AppOrder on orderDetails.OrderId equals appOrder.OrderId
+                                          where orderDetails.OrderId == orderId
+                                          select new
+                                          {
+                                              ItemId = item.ItemId,
+                                              ItemName = item.Name,
+                                              ItemCategory = item.Category,
+                                              ItemPrice = item.Price,
+                                              ItemQuantity = orderDetails.Quantity,
+                                              ItemImage = item.ItemImage,
+                                          }
+                                        )
+                              }
+                           );
+            
+            if(listOrders != null)
+            {
+                return Ok(listOrders);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+
+        // POST: api/Restaurants/order
         // POST confirm the order of the user and add it to the database
         [HttpPost("order")]
         public IActionResult ConfirmOrder(ConfirmOrder order)
@@ -203,6 +258,99 @@ namespace FoodExApi.Controllers
         }
 
 
+        [HttpPost("CompleteOrder")]
+        public IActionResult CompleteOrder(int orderId)
+        {
+            var db = this.db;
+            var appOrder = db.AppOrder.SingleOrDefault(order => order.OrderId == orderId);
+
+            //return Ok(appOrder);
+            // if order exists
+            if (appOrder != null)
+            {
+                // Update the status of the order with that id
+                appOrder.OrderStatus = 2;
+
+                // Save changes
+                db.SaveChanges();
+
+                return Ok(orderId);
+            }
+            else
+            {
+                return BadRequest();
+
+            }
+        }
+
+
+        // POST: api/Restaurants/{restaurantId}/DeliverOrder
+        [HttpPost("{restaurantId}/DeliverOrder")]
+        public IActionResult DeliverOrder(int orderId)
+        {
+            var db = this.db;
+            var appOrder = db.AppOrder.SingleOrDefault(order => order.OrderId == orderId);
+
+            //return Ok(appOrder);
+            // if order exists
+            if (appOrder != null)
+            {
+                // Update the status of the order with that id
+                appOrder.OrderStatus = 3;
+
+                // Save changes
+                db.SaveChanges();
+
+                return Ok(orderId);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+
+        // GET: api/Restaurants/{restaurantId}/users
+        // Get overall data about users in Sidebar users
+        [HttpGet("{restaurantId}/users")]
+        public IActionResult GetUsersData(int restaurantId)
+        {
+            var db = this.db;
+
+            //SELECT app_user.user_id, app_user.first_name, app_user.last_name, app_user.phone_number, app_user.date_joined, COUNT(make_order.order_id) AS 'TotalOrders'
+            //FROM make_order
+            //INNER JOIN app_order ON make_order.order_id = app_order.order_id
+            //INNER JOIN app_user ON make_order.user_id = app_user.user_id
+            //WHERE restaurant_id = 1
+            //GROUP BY app_user.user_id, app_user.first_name, app_user.last_name, app_user.phone_number, app_user.date_joined;
+
+            var results = (from makeOrder in db.MakeOrder
+                           join appOrder in db.AppOrder on makeOrder.OrderId equals appOrder.OrderId
+                           join appUser in db.AppUser on makeOrder.UserId equals appUser.UserId
+                           where appOrder.RestaurantId == restaurantId
+                           orderby makeOrder.DateOrdered
+                           group makeOrder by new { appUser.UserId, appUser.FirstName, appUser.LastName, appUser.PhoneNumber, appUser.DateJoined }
+                           into grp
+                           select new
+                           {
+                                UserId = grp.Key.UserId,
+                                FirstName = grp.Key.FirstName,
+                                LastName = grp.Key.LastName,
+                                PhoneNUmber = grp.Key.PhoneNumber,
+                                DateJoined = grp.Key.DateJoined,
+                                TotalOrders = grp.Count(),
+                           }
+                          );
+
+            if(results != null)
+            {
+                return Ok(results);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
 
 
         // PUT: api/Restaurants/5

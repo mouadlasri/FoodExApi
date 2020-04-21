@@ -158,5 +158,63 @@ namespace FoodExApi.Controllers
                 return BadRequest();
             }
         }
+
+        [HttpGet("{restaurantId}/weeklyRevenue")]
+        public ActionResult GetWeeklyRevenue(int restaurantId)
+        {
+            var db = this.db;
+
+            var results = ( from makeOrder in db.MakeOrder
+                            join appOrder in db.AppOrder on makeOrder.OrderId equals appOrder.OrderId
+                            where appOrder.RestaurantId == restaurantId 
+                            && makeOrder.DateOrdered.Value.Year == 2020 // replace by DateTime.Now.Year
+                            group makeOrder by new { month = makeOrder.DateOrdered.Value.Month, year = makeOrder.DateOrdered.Value.Year } into grp
+                            select new { month = string.Format("{0}", grp.Key.month, grp.Key.year), totalOrders = grp.Count() }
+                            );
+
+            
+            //SELECT COUNT(order_id) AS 'Total Orders made', FORMAT(date_ordered, 'dddd') AS 'Day' FROM make_order
+            //WHERE date_ordered >= DATEADD(day, -7, '2020-03-10')
+            //GROUP BY FORMAT(date_ordered, 'dddd');
+            return Ok(results);
+        }
+
+        [HttpGet("{restaurantId}/monthlyRevenues/{year}")]
+        public ActionResult GetMonthlyRevenues(int restaurantId, int year)
+        {
+            return Ok();
+        }
+
+        // Get 4 most trending orders
+        [HttpGet("{restaurantId}/trendingOrders")]
+        public ActionResult GetTrendingOrders(int restaurantId)
+        {
+            var db = this.db;
+
+            var trendingOrders = (from item in db.Item
+                                      join orderDetails in db.OrderDetails on item.ItemId equals orderDetails.ItemId
+                                      where item.RestaurantId == restaurantId
+                                      group orderDetails by new { item.ItemId, item.Name, item.Price, item.ItemImage } into grp
+                                      orderby grp.Sum(item => item.Quantity) descending
+                                      select new
+                                      {
+                                          ItemId = grp.Key.ItemId,
+                                          ItemName = grp.Key.Name,
+                                          ItemPrice = grp.Key.Price,
+                                          ItemImage = grp.Key.ItemImage,
+                                          TotalOrdered = grp.Sum(item => item.Quantity),
+                                          TotalRevenues = grp.Sum(item => item.Item.Price * item.Quantity)
+                                      }
+                                     ).Take(4);
+
+            if (trendingOrders != null)
+            {
+                return Ok(trendingOrders);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
     }
 }
