@@ -316,29 +316,24 @@ namespace FoodExApi.Controllers
         public IActionResult GetUsersData(int restaurantId)
         {
             var db = this.db;
-
-            //SELECT app_user.user_id, app_user.first_name, app_user.last_name, app_user.phone_number, app_user.date_joined, COUNT(make_order.order_id) AS 'TotalOrders'
-            //FROM make_order
-            //INNER JOIN app_order ON make_order.order_id = app_order.order_id
-            //INNER JOIN app_user ON make_order.user_id = app_user.user_id
-            //WHERE restaurant_id = 1
-            //GROUP BY app_user.user_id, app_user.first_name, app_user.last_name, app_user.phone_number, app_user.date_joined;
-
+            
             var results = (from makeOrder in db.MakeOrder
                            join appOrder in db.AppOrder on makeOrder.OrderId equals appOrder.OrderId
                            join appUser in db.AppUser on makeOrder.UserId equals appUser.UserId
+                           join ratings in db.Ratings on appUser.UserId equals ratings.UserId
                            where appOrder.RestaurantId == restaurantId
                            orderby makeOrder.DateOrdered
-                           group makeOrder by new { appUser.UserId, appUser.FirstName, appUser.LastName, appUser.PhoneNumber, appUser.DateJoined }
+                           group makeOrder by new { appUser.UserId, appUser.FirstName, appUser.LastName, appUser.PhoneNumber, appUser.DateJoined, ratings.Rating }
                            into grp
                            select new
                            {
                                 UserId = grp.Key.UserId,
                                 FirstName = grp.Key.FirstName,
                                 LastName = grp.Key.LastName,
-                                PhoneNUmber = grp.Key.PhoneNumber,
+                                PhoneNumber = grp.Key.PhoneNumber,
                                 DateJoined = grp.Key.DateJoined,
                                 TotalOrders = grp.Count(),
+                                UserRating = grp.Key.Rating
                            }
                           );
 
@@ -352,6 +347,48 @@ namespace FoodExApi.Controllers
             }
         }
 
+        // GET: api/Restaurants/{restaurantId}/users
+        // Get overall data about users in Sidebar users
+        [HttpGet("{restaurantId}/items")]
+        public IActionResult GetRestaurantItems(int restaurantId)
+        {
+            var db = this.db;
+
+            //SELECT item.item_id, item.name, item_category.category_name, item.price, item.waiting_time, SUM(order_details.quantity) as 'Total Ordered'
+            //FROM item
+            //INNER JOIN item_category ON item.category = item_category.category_id
+            //INNER JOIN order_details ON item.item_id = order_details.item_id
+            //WHERE item.restaurant_id = 1
+            //GROUP BY item.item_id, item.name, item_category.category_name, item.price, item.waiting_time
+
+            var results = (from item in db.Item
+                           join itemCategory in db.ItemCategory on item.Category equals itemCategory.CategoryId 
+                           join orderDetails in db.OrderDetails on item.ItemId equals orderDetails.ItemId
+                           where item.RestaurantId == restaurantId
+                           let itemId = orderDetails.ItemId
+                           group orderDetails by new { item.ItemId, item.Name, itemCategory.CategoryName, item.ItemImage, item.Price, item.WaitingTime }
+                           into grp
+                           select new
+                           {
+                               ItemId = grp.Key.ItemId,
+                               ItemName = grp.Key.Name,
+                               ItemCategory = grp.Key.CategoryName,
+                               ItemImage = grp.Key.ItemImage,
+                               ItemPrice = grp.Key.Price,
+                               ItemWaitingTime = grp.Key.WaitingTime,
+                               TotalOrdered = grp.Sum(item => item.Quantity.Value)
+                           }
+                          );
+
+            if (results != null)
+            {
+                return Ok(results);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
 
         // PUT: api/Restaurants/5
         [HttpPut("{id}")]

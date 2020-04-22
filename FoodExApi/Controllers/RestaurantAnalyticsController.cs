@@ -130,11 +130,6 @@ namespace FoodExApi.Controllers
         public ActionResult GetTopCategories(int restaurantId)
         {
             var db = this.db;
-            //SELECT TOP 5 order_details.item_id, SUM(order_details.quantity) AS 'Total Ordered' FROM order_details
-            //INNER JOIN item ON order_details.item_id = item.item_id
-            //WHERE item.restaurant_id = 1
-            //GROUP BY(order_details.item_id)
-            //ORDER BY 'Total Ordered' DESC;
 
             var topItemsCategories = (from item in db.Item 
                                       join orderDetails in db.OrderDetails on item.ItemId equals orderDetails.ItemId
@@ -173,9 +168,6 @@ namespace FoodExApi.Controllers
                             );
 
             
-            //SELECT COUNT(order_id) AS 'Total Orders made', FORMAT(date_ordered, 'dddd') AS 'Day' FROM make_order
-            //WHERE date_ordered >= DATEADD(day, -7, '2020-03-10')
-            //GROUP BY FORMAT(date_ordered, 'dddd');
             return Ok(results);
         }
 
