@@ -119,6 +119,18 @@ namespace FoodExApi.Controllers
             
         }
 
+        // GET: api/Restaurants/filter/{id}/ItemCategories
+        // Return all menu items of a specific category of a specific resetaurant
+        [HttpGet("{id}/completeHistory")]
+        public ActionResult CompleteHistory(int id)
+        {
+            var db = this.db;
+
+            return Ok();
+
+
+        }
+
         // GET: api/Restaurants/{restaurantId}/{orderStatus}
         // Get orders of specific status
         [HttpGet("ListOrders/{restaurantId}/{orderStatus}")]
@@ -366,7 +378,7 @@ namespace FoodExApi.Controllers
                            join orderDetails in db.OrderDetails on item.ItemId equals orderDetails.ItemId
                            where item.RestaurantId == restaurantId
                            let itemId = orderDetails.ItemId
-                           group orderDetails by new { item.ItemId, item.Name, itemCategory.CategoryName, item.ItemImage, item.Price, item.WaitingTime }
+                           group orderDetails by new { item.ItemId, item.Name, itemCategory.CategoryName, item.ItemImage, item.Price, item.WaitingTime, item.ItemStatus }
                            into grp
                            select new
                            {
@@ -376,6 +388,7 @@ namespace FoodExApi.Controllers
                                ItemImage = grp.Key.ItemImage,
                                ItemPrice = grp.Key.Price,
                                ItemWaitingTime = grp.Key.WaitingTime,
+                               ItemStatus = grp.Key.ItemStatus,
                                TotalOrdered = grp.Sum(item => item.Quantity.Value)
                            }
                           );
@@ -389,6 +402,41 @@ namespace FoodExApi.Controllers
                 return BadRequest();
             }
         }
+
+        // POST: api/Restaurants/{restaurantId}/updateItemStatus
+        [HttpPost("{restaurantId}/updateItemStatus")]
+        public IActionResult UpdateItemStatus(int itemId)
+        {
+            var db = this.db;
+            var item = db.Item.SingleOrDefault(i => i.ItemId == itemId);
+
+            // if item exists
+            if (item != null)
+            {
+
+                // Update the status of the order with that id
+                if (item.ItemStatus == 0)
+                {
+                    item.ItemStatus = 1;
+                }
+
+                else
+                {
+                    item.ItemStatus = 0;
+                }
+               
+
+                // Save changes
+                db.SaveChanges();
+
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
 
         // PUT: api/Restaurants/5
         [HttpPut("{id}")]

@@ -80,6 +80,10 @@ namespace FoodExApi.Models
                     .HasColumnName("date_completed")
                     .HasColumnType("datetime");
 
+                entity.Property(e => e.DatePickup)
+                    .HasColumnName("date_pickup")
+                    .HasColumnType("datetime");
+
                 entity.Property(e => e.OrderStatus).HasColumnName("order_status");
 
                 entity.Property(e => e.RestaurantId).HasColumnName("restaurant_id");
@@ -202,6 +206,10 @@ namespace FoodExApi.Models
                 entity.Property(e => e.ItemImage)
                     .HasColumnName("item_image")
                     .IsUnicode(false);
+
+                entity.Property(e => e.ItemStatus)
+                    .HasColumnName("item_status")
+                    .HasDefaultValueSql("((1))");
 
                 entity.Property(e => e.Name)
                     .HasColumnName("name")

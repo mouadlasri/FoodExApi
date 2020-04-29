@@ -93,6 +93,150 @@ namespace FoodExApi.Controllers
             return Ok(ordersCompleted);
         }
 
+        // GET api/Users/{id}/OrdersCompleted
+        // Get completed orders of user
+        [HttpGet("{id}/DeliveredOrders")]
+        public ActionResult DeliveredOrders(int id)
+        {
+            var db = this.db;
+
+            int ordersCompleted = db.AppOrder.Where(appOrder => appOrder.OrderStatus == 3).Count(); // 2 = completed orders
+
+            return Ok(ordersCompleted);
+        }
+
+        [HttpGet("{id}/ListOrdersCompleted")]
+        public ActionResult ListOrdersCompleted(int id)
+        {
+            var db = this.db;
+
+
+            // Get the list of order items made by users with their respective order status and user information
+            var listOrders = (from makeOrder in db.MakeOrder
+                              join appOrder in db.AppOrder on makeOrder.OrderId equals appOrder.OrderId
+                              where makeOrder.UserId == 67887 && appOrder.OrderStatus == 2
+                              let userId = makeOrder.UserId
+                              let orderId = makeOrder.OrderId
+                              select new
+                              {
+                                  OrderId = appOrder.OrderId,
+                                  DateCompleted = appOrder.DateCompleted,
+                                  // Get the list of items of this order
+                                  ItemsOrdered = (from orderDetails in db.OrderDetails
+                                                  join item in db.Item on orderDetails.ItemId equals item.ItemId
+                                                  join appOrder in db.AppOrder on orderDetails.OrderId equals appOrder.OrderId
+                                                  where orderDetails.OrderId == orderId
+                                                  select new
+                                                  {
+                                                      ItemId = item.ItemId,
+                                                      ItemName = item.Name,
+                                                      ItemCategory = item.Category,
+                                                      ItemPrice = item.Price,
+                                                      ItemQuantity = orderDetails.Quantity,
+                                                      ItemImage = item.ItemImage,
+                                                  }
+                                        )
+                              }
+                           );
+
+            if (listOrders != null)
+            {
+                return Ok(listOrders);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpGet("{id}/ListOrdersDelivered")]
+        public ActionResult ListOrdersDelivered(int id)
+        {
+            var db = this.db;
+
+
+            // Get the list of order items made by users with their respective order status and user information
+            var listOrders = (from makeOrder in db.MakeOrder
+                              join appOrder in db.AppOrder on makeOrder.OrderId equals appOrder.OrderId
+                              where makeOrder.UserId == 67887 && appOrder.OrderStatus == 3
+                              let userId = makeOrder.UserId
+                              let orderId = makeOrder.OrderId
+                              select new
+                              {
+                                  OrderId = appOrder.OrderId,
+                                  DateCompleted = appOrder.DateCompleted,
+                                  // Get the list of items of this order
+                                  ItemsOrdered = (from orderDetails in db.OrderDetails
+                                                  join item in db.Item on orderDetails.ItemId equals item.ItemId
+                                                  join appOrder in db.AppOrder on orderDetails.OrderId equals appOrder.OrderId
+                                                  where orderDetails.OrderId == orderId
+                                                  select new
+                                                  {
+                                                      ItemId = item.ItemId,
+                                                      ItemName = item.Name,
+                                                      ItemCategory = item.Category,
+                                                      ItemPrice = item.Price,
+                                                      ItemQuantity = orderDetails.Quantity,
+                                                      ItemImage = item.ItemImage,
+                                                  }
+                                        )
+                              }
+                           );
+
+            if (listOrders != null)
+            {
+                return Ok(listOrders);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+
+        [HttpGet("{id}/ListOrdersPending")]
+        public ActionResult ListOrdersPending(int id)
+        {
+            var db = this.db;
+
+
+            // Get the list of order items made by users with their respective order status and user information
+            var listOrders = (from makeOrder in db.MakeOrder
+                              join appOrder in db.AppOrder on makeOrder.OrderId equals appOrder.OrderId
+                              where makeOrder.UserId == 67887 && appOrder.OrderStatus == 1
+                              let userId = makeOrder.UserId
+                              let orderId = makeOrder.OrderId
+                              select new
+                              {
+                                  OrderId = appOrder.OrderId,
+                                  DateCompleted = appOrder.DateCompleted,
+                                  // Get the list of items of this order
+                                  ItemsOrdered = (from orderDetails in db.OrderDetails
+                                                  join item in db.Item on orderDetails.ItemId equals item.ItemId
+                                                  join appOrder in db.AppOrder on orderDetails.OrderId equals appOrder.OrderId
+                                                  where orderDetails.OrderId == orderId
+                                                  select new
+                                                  {
+                                                      ItemId = item.ItemId,
+                                                      ItemName = item.Name,
+                                                      ItemCategory = item.Category,
+                                                      ItemPrice = item.Price,
+                                                      ItemQuantity = orderDetails.Quantity,
+                                                      ItemImage = item.ItemImage,
+                                                  }
+                                        )
+                              }
+                           );
+
+            if (listOrders != null)
+            {
+                return Ok(listOrders);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
 
         [HttpPost("/CreateAccount")]
         public IActionResult CreateAccount(Account newAccount)

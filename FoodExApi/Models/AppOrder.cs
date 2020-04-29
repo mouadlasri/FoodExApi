@@ -16,6 +16,7 @@ namespace FoodExApi.Models
         public bool? Cancelled { get; set; }
         public short? OrderStatus { get; set; }
         public DateTime? DateCompleted { get; set; }
+        public DateTime? DatePickup { get; set; }
 
         public virtual MakeOrder Order { get; set; }
         public virtual Restaurant Restaurant { get; set; }

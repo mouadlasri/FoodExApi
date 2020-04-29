@@ -18,6 +18,7 @@ namespace FoodExApi.Models
         public string ItemImage { get; set; }
         public string ItemDescription { get; set; }
         public int? WaitingTime { get; set; }
+        public int? ItemStatus { get; set; }
 
         public virtual Restaurant Restaurant { get; set; }
         public virtual ICollection<OrderDetails> OrderDetails { get; set; }
